@@ -259,15 +259,24 @@
 
         /* ─── Print Styles ──────────────────────────────────────── */
         @media print {
-            body { background: #fff; padding: 0; }
+            @page { margin: 5mm; }
+            body { background: #fff; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .toolbar { display: none !important; }
             .receipt {
                 box-shadow: none;
                 border-radius: 0;
                 max-width: 100%;
+                margin: 0;
             }
-            .receipt-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .total-bar { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .receipt-header { padding: 20px; }
+            .receipt-body { padding: 15px 20px 0; }
+            .customer-block, .court-block { margin-bottom: 12px; padding: 10px 15px; }
+            .detail-rows { margin-bottom: 12px; }
+            .detail-row { padding: 6px 0; }
+            .total-bar { margin-bottom: 15px; padding: 12px 18px; }
+            .booking-code { padding: 10px 15px; margin-bottom: 10px; }
+            .booking-code img { max-height: 35px !important; margin: 4px 0 !important; }
+            .receipt-footer { padding-top: 10px; }
         }
 
         /* ─── Responsive ────────────────────────────────────────── */
@@ -412,11 +421,15 @@
                 <div class="total-amount">Rp {{ number_format($booking->total_price, 0, ',', '.') }}</div>
             </div>
 
-            {{-- Booking code --}}
+            {{-- Booking code & Barcode --}}
             <div style="text-align:center;margin-bottom:18px;">
                 <div class="booking-code">
                     <span class="booking-code-label">Kode Booking</span>
-                    <span class="booking-code-value">BH-{{ str_pad($booking->id, 5, '0', STR_PAD_LEFT) }}-{{ strtoupper(substr(md5($booking->id.$booking->created_at), 0, 6)) }}</span>
+                    @php
+                        $bookingCode = 'BH-' . str_pad($booking->id, 5, '0', STR_PAD_LEFT) . '-' . strtoupper(substr(md5($booking->id.$booking->created_at), 0, 6));
+                    @endphp
+                    <img src="https://bwipjs-api.metafloor.com/?bcid=code128&text={{ $bookingCode }}&scale=2&height=12&includetext=false" alt="Barcode" style="max-height: 40px; margin: 6px 0;">
+                    <span class="booking-code-value">{{ $bookingCode }}</span>
                 </div>
             </div>
 

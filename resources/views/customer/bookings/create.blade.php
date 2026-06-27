@@ -1,4 +1,10 @@
 <x-customer-layout title="Booking Lapangan">
+@push('styles')
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        .flatpickr-input[readonly] { background-color: #fff; cursor: pointer; }
+    </style>
+@endpush
 
 <div class="mb-6">
     <a href="{{ route('customer.dashboard') }}" class="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-700 transition-colors">
@@ -22,6 +28,30 @@
             <form method="POST" action="{{ route('customer.bookings.store') }}"
                   x-data="bookingForm()" x-init="init()">
                 @csrf
+
+                {{-- ── Booking Type ── --}}
+                <div class="mb-7">
+                    <label class="form-label">Tipe Booking <span class="text-red-400">*</span></label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <label class="flex items-center gap-3 border-2 rounded-xl p-4 cursor-pointer transition-all duration-200"
+                               :class="bookingType === 'daily' ? 'border-emerald-400 bg-emerald-50/50 shadow-sm shadow-emerald-100' : 'border-gray-100 hover:border-gray-200'">
+                            <input type="radio" name="booking_type" value="daily" x-model="bookingType" @change="calculateTotal()" class="text-emerald-600 focus:ring-emerald-500" {{ old('booking_type', 'daily') == 'daily' ? 'checked' : '' }}>
+                            <div>
+                                <p class="font-bold text-gray-900 text-sm">Harian</p>
+                                <p class="text-xs text-gray-500">1x Main</p>
+                            </div>
+                        </label>
+                        <label class="flex items-center gap-3 border-2 rounded-xl p-4 cursor-pointer transition-all duration-200 relative overflow-hidden"
+                               :class="bookingType === 'monthly' ? 'border-emerald-400 bg-emerald-50/50 shadow-sm shadow-emerald-100' : 'border-gray-100 hover:border-gray-200'">
+                            <div class="absolute top-0 right-0 bg-emerald-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-bl-lg uppercase tracking-wide">Hemat Waktu</div>
+                            <input type="radio" name="booking_type" value="monthly" x-model="bookingType" @change="calculateTotal()" class="text-emerald-600 focus:ring-emerald-500" {{ old('booking_type') == 'monthly' ? 'checked' : '' }}>
+                            <div>
+                                <p class="font-bold text-gray-900 text-sm">Paket Bulanan</p>
+                                <p class="text-xs text-gray-500">4x Main beruntun (Hari & Jam sama)</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
 
                 {{-- ── Court Selection ── --}}
                 <div class="mb-7">
@@ -70,23 +100,25 @@
                 </div>
 
                 {{-- ── Datetime Pickers ── --}}
-                <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <div>
                         <label class="form-label">Jam Mulai <span class="text-red-400">*</span></label>
-                        <input type="datetime-local" name="start_time"
-                               value="{{ old('start_time') }}" step="3600"
-                               x-model="startTime" @change="calculateTotal()"
-                               class="form-input {{ $errors->has('start_time') ? 'form-input-error' : '' }}">
+                        <input type="text" name="start_time"
+                               value="{{ old('start_time') }}"
+                               x-ref="startPicker"
+                               class="flatpickr form-input {{ $errors->has('start_time') ? 'form-input-error' : '' }}"
+                               placeholder="Pilih Tanggal & Jam">
                         @error('start_time')
                         <p class="text-xs text-red-500 mt-1.5">{{ $message }}</p>
                         @enderror
                     </div>
                     <div>
                         <label class="form-label">Jam Selesai <span class="text-red-400">*</span></label>
-                        <input type="datetime-local" name="end_time"
-                               value="{{ old('end_time') }}" step="3600"
-                               x-model="endTime" @change="calculateTotal()"
-                               class="form-input {{ $errors->has('end_time') ? 'form-input-error' : '' }}">
+                        <input type="text" name="end_time"
+                               value="{{ old('end_time') }}"
+                               x-ref="endPicker"
+                               class="flatpickr form-input {{ $errors->has('end_time') ? 'form-input-error' : '' }}"
+                               placeholder="Pilih Tanggal & Jam">
                         @error('end_time')
                         <p class="text-xs text-red-500 mt-1.5">{{ $message }}</p>
                         @enderror
@@ -98,10 +130,14 @@
                      class="bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-200 rounded-2xl p-5 mb-6">
                     <p class="text-xs font-bold text-emerald-600 uppercase tracking-widest mb-3">Estimasi Biaya</p>
                     <div class="flex items-center justify-between text-sm mb-1.5">
-                        <span class="text-gray-500">Durasi</span>
+                        <span class="text-gray-500">Durasi per pertemuan</span>
                         <span class="font-semibold text-gray-800" x-text="estimatedHours + ' jam'"></span>
                     </div>
-                    <div class="flex items-center justify-between">
+                    <div class="flex items-center justify-between text-sm mb-3" x-show="bookingType === 'monthly'">
+                        <span class="text-gray-500">Total Pertemuan</span>
+                        <span class="font-semibold text-gray-800">4x (1 Bulan)</span>
+                    </div>
+                    <div class="flex items-center justify-between pt-3 border-t border-emerald-100">
                         <span class="text-gray-500 text-sm">Total Estimasi</span>
                         <span class="text-2xl font-extrabold text-emerald-600"
                               x-text="'Rp ' + estimatedTotal.toLocaleString('id-ID')"></span>
@@ -165,16 +201,44 @@
 </div>
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://npmcdn.com/flatpickr/dist/l10n/id.js"></script>
 <script>
 function bookingForm() {
     return {
+        bookingType: '{{ old('booking_type', 'daily') }}',
         selectedCourt: {{ old('court_id', 'null') }},
         pricePerHour: 0,
         startTime: '{{ old('start_time', '') }}',
         endTime: '{{ old('end_time', '') }}',
         estimatedTotal: 0,
         estimatedHours: 0,
-        init() { this.calculateTotal(); },
+        init() { 
+            const self = this;
+            const fpConfig = {
+                enableTime: true,
+                time_24hr: true,
+                dateFormat: "Y-m-d\\TH:i",
+                altInput: true,
+                altFormat: "d M Y, H:i",
+                minDate: "today",
+                minuteIncrement: 60,
+                locale: "id",
+                onChange: function(selectedDates, dateStr, instance) {
+                    if (instance.element === self.$refs.startPicker) {
+                        self.startTime = dateStr;
+                    } else if (instance.element === self.$refs.endPicker) {
+                        self.endTime = dateStr;
+                    }
+                    self.calculateTotal();
+                }
+            };
+            
+            flatpickr(this.$refs.startPicker, fpConfig);
+            flatpickr(this.$refs.endPicker, fpConfig);
+            
+            this.calculateTotal(); 
+        },
         updatePrice(price) { this.pricePerHour = price; this.calculateTotal(); },
         calculateTotal() {
             if (!this.startTime || !this.endTime || !this.pricePerHour) { this.estimatedTotal = 0; return; }
@@ -182,7 +246,8 @@ function bookingForm() {
             if (diff <= 0) { this.estimatedTotal = 0; return; }
             const hours = diff / 3600000;
             this.estimatedHours = Math.round(hours * 10) / 10;
-            this.estimatedTotal = Math.round(hours * this.pricePerHour);
+            let baseTotal = Math.round(hours * this.pricePerHour);
+            this.estimatedTotal = this.bookingType === 'monthly' ? baseTotal * 4 : baseTotal;
         }
     }
 }

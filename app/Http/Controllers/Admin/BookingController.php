@@ -31,7 +31,7 @@ class BookingController extends Controller
         ];
 
         $recentBookings = Booking::with(['user', 'court'])
-            ->latest()
+            ->latest('id')
             ->take(10)
             ->get();
 
@@ -45,7 +45,7 @@ class BookingController extends Controller
     {
         Booking::cancelExpiredBookings();
 
-        $query = Booking::with(['user', 'court'])->latest();
+        $query = Booking::with(['user', 'court'])->latest('id');
 
         // Filter by status
         if ($request->filled('status')) {

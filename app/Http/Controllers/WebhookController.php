@@ -33,19 +33,19 @@ class WebhookController extends Controller
             return response()->json(['message' => 'Bad request'], 400);
         }
 
-        // Find booking by xendit_invoice_id
-        $booking = Booking::where('xendit_invoice_id', $invoiceId)->first();
+        // Find all bookings by xendit_invoice_id (since a monthly package can have 4 bookings linked to 1 invoice)
+        $bookings = Booking::where('xendit_invoice_id', $invoiceId)->get();
 
-        if (!$booking) {
+        if ($bookings->isEmpty()) {
             Log::warning('Booking not found for Xendit Invoice', ['invoice_id' => $invoiceId]);
             return response()->json(['message' => 'Booking not found'], 404);
         }
 
         // Update status based on webhook payload
         if ($status === 'PAID' || $status === 'SETTLED') {
-            $booking->update(['status' => 'completed']);
+            Booking::where('xendit_invoice_id', $invoiceId)->update(['status' => 'completed']);
         } elseif ($status === 'EXPIRED') {
-            $booking->update(['status' => 'cancelled']);
+            Booking::where('xendit_invoice_id', $invoiceId)->update(['status' => 'cancelled']);
         }
 
         return response()->json(['message' => 'Success']);

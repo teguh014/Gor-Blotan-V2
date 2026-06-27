@@ -21,6 +21,7 @@ class StoreBookingRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'booking_type' => ['required', 'in:daily,monthly'],
             'court_id'   => ['required', 'integer', 'exists:courts,id'],
             'start_time' => ['required', 'date_format:Y-m-d\TH:i', 'after:now'],
             'end_time'   => ['required', 'date_format:Y-m-d\TH:i', 'after:start_time'],
@@ -79,16 +80,26 @@ class StoreBookingRequest extends FormRequest
 
             // Exclude current booking ID when editing (for future update support)
             $excludeId = $this->route('booking')?->id;
+            
+            $bookingType = $this->input('booking_type', 'daily');
+            $weeksToBook = $bookingType === 'monthly' ? 4 : 1;
 
-            $overlap = Booking::overlapping($courtId, $startTime, $endTime)
-                ->when($excludeId, fn($q) => $q->where('id', '!=', $excludeId))
-                ->exists();
+            for ($i = 0; $i < $weeksToBook; $i++) {
+                $checkStart = $start->copy()->addWeeks($i)->format('Y-m-d H:i');
+                $checkEnd   = $end->copy()->addWeeks($i)->format('Y-m-d H:i');
 
-            if ($overlap) {
-                $validator->errors()->add(
-                    'start_time',
-                    'Lapangan sudah dipesan pada jam tersebut. Silakan pilih jam lain.'
-                );
+                $overlap = Booking::overlapping($courtId, $checkStart, $checkEnd)
+                    ->when($excludeId, fn($q) => $q->where('id', '!=', $excludeId))
+                    ->exists();
+
+                if ($overlap) {
+                    $tanggal = \Carbon\Carbon::parse($checkStart)->translatedFormat('d M Y');
+                    $validator->errors()->add(
+                        'start_time',
+                        "Lapangan sudah dipesan pada jam tersebut untuk tanggal {$tanggal}. Silakan pilih jam atau lapangan lain."
+                    );
+                    return;
+                }
             }
         });
     }

@@ -24,7 +24,7 @@ class BookingController extends Controller
 
         $bookings = Booking::with('court')
             ->where('user_id', auth()->id())
-            ->latest()
+            ->latest('id')
             ->paginate(10);
 
         $courts = Court::active()->get(['id', 'name']);
@@ -52,55 +52,73 @@ class BookingController extends Controller
      */
     public function store(StoreBookingRequest $request): RedirectResponse
     {
-        $court     = Court::findOrFail($request->court_id);
-        $startTime = $request->start_time;
-        $endTime   = $request->end_time;
+        $court       = Court::findOrFail($request->court_id);
+        $startTime   = \Carbon\Carbon::parse($request->start_time);
+        $endTime     = \Carbon\Carbon::parse($request->end_time);
+        $bookingType = $request->input('booking_type', 'daily');
+        $weeksToBook = $bookingType === 'monthly' ? 4 : 1;
 
         // AUTO-MATH: Calculate total_price on the backend
-        $start      = \Carbon\Carbon::parse($startTime);
-        $end        = \Carbon\Carbon::parse($endTime);
-        $hours      = abs($start->diffInMinutes($end)) / 60; // supports half-hour slots, always positive
-        $totalPrice = round($hours * $court->price_per_hour, 2);
+        $hours      = abs($startTime->diffInMinutes($endTime)) / 60;
+        $basePrice  = round($hours * $court->price_per_hour, 2);
+        $totalPrice = $basePrice * $weeksToBook;
 
-        $booking = Booking::create([
-            'user_id'     => auth()->id(),
-            'court_id'    => $court->id,
-            'start_time'  => $startTime,
-            'end_time'    => $endTime,
-            'total_price' => $totalPrice,
-            'status'      => 'pending',
-        ]);
+        $createdBookings = [];
+
+        for ($i = 0; $i < $weeksToBook; $i++) {
+            $bookingStart = $startTime->copy()->addWeeks($i);
+            $bookingEnd   = $endTime->copy()->addWeeks($i);
+
+            $createdBookings[] = Booking::create([
+                'user_id'     => auth()->id(),
+                'court_id'    => $court->id,
+                'start_time'  => $bookingStart->toDateTimeString(),
+                'end_time'    => $bookingEnd->toDateTimeString(),
+                'total_price' => $basePrice,
+                'status'      => 'pending',
+            ]);
+        }
+
+        // We use the first booking's ID for the external_id reference
+        $primaryBooking = $createdBookings[0];
 
         // Xendit Integration
         Configuration::setXenditKey(env('XENDIT_SECRET_KEY'));
         $apiInstance = new InvoiceApi();
 
+        $desc = $bookingType === 'monthly' 
+            ? 'Pembayaran Paket Bulanan (4x) Lapangan ' . $court->name
+            : 'Pembayaran Booking Lapangan ' . $court->name;
+
         $createInvoiceRequest = new CreateInvoiceRequest([
-            'external_id' => 'BOOKING_' . $booking->id . '_' . Str::random(5),
-            'description' => 'Pembayaran Booking Lapangan ' . $court->name,
+            'external_id' => 'BOOKING_' . $primaryBooking->id . '_' . Str::random(5),
+            'description' => $desc,
             'amount' => $totalPrice,
             'payer_email' => auth()->user()->email,
             'customer' => [
                 'given_names' => auth()->user()->name,
                 'email' => auth()->user()->email,
             ],
-            'success_redirect_url' => route('customer.bookings.show', $booking->id),
+            'success_redirect_url' => route('customer.dashboard'),
             'failure_redirect_url' => route('customer.dashboard'),
         ]);
 
         try {
             $result = $apiInstance->createInvoice($createInvoiceRequest);
             
-            $booking->update([
-                'xendit_invoice_id' => $result['id'],
-                'payment_url' => $result['invoice_url']
-            ]);
+            // Update all created bookings with the same invoice
+            foreach ($createdBookings as $b) {
+                $b->update([
+                    'xendit_invoice_id' => $result['id'],
+                    'payment_url' => $result['invoice_url']
+                ]);
+            }
             
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Xendit Error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
-            // If Xendit fails, we can delete the booking or just leave it pending without payment URL
-            // and let the user try again, or return error.
-            $booking->delete();
+            foreach ($createdBookings as $b) {
+                $b->delete();
+            }
             return redirect()->route('customer.dashboard')
                 ->with('error', 'Gagal membuat tagihan pembayaran. Silakan coba lagi.');
         }
@@ -133,11 +151,6 @@ class BookingController extends Controller
     }
 
     /**
-     * Remove or adapt simulated payment if needed.
-     * We will remove the simulated payment and rely on webhook.
-     */
-
-    /**
      * Check payment status manually from Xendit API.
      * Useful for local development when webhooks cannot reach localhost.
      */
@@ -154,10 +167,10 @@ class BookingController extends Controller
             $status = $invoice['status'] ?? null;
 
             if ($status === 'PAID' || $status === 'SETTLED') {
-                $booking->update(['status' => 'completed']);
+                Booking::where('xendit_invoice_id', $booking->xendit_invoice_id)->update(['status' => 'completed']);
                 return back()->with('success', 'Pembayaran berhasil dikonfirmasi dari Xendit!');
             } elseif ($status === 'EXPIRED') {
-                $booking->update(['status' => 'cancelled']);
+                Booking::where('xendit_invoice_id', $booking->xendit_invoice_id)->update(['status' => 'cancelled']);
                 return back()->with('error', 'Waktu pembayaran telah habis.');
             }
 

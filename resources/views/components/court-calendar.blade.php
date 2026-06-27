@@ -701,8 +701,19 @@
             eventClick: function () {
                 tooltip.style.display = 'none';
             },
-            /* Style events text properly */
+            /* Style events text properly based on view */
             eventContent: function (arg) {
+                if (arg.view.type.includes('list')) {
+                    return {
+                        html: `<div style="display:flex; flex-direction:column; gap:2px; padding: 2px 0;">
+                            <div style="font-weight:700; color:#1f2937; font-size:0.85rem;">${arg.event.title}</div>
+                            <div style="font-size:0.75rem; color:#6b7280; font-weight:500;">
+                                <span style="margin-right:8px;">👤 ${arg.event.extendedProps.user}</span>
+                                <span>🏷️ ${arg.event.extendedProps.status}</span>
+                            </div>
+                        </div>`
+                    };
+                }
                 return {
                     html: `<div style="display:flex;align-items:center;padding:1px 3px;overflow:hidden;color:#ffffff;">
                         <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${arg.event.title}</span>
