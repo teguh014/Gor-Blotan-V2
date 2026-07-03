@@ -671,12 +671,11 @@
             headerToolbar: {
                 left:   'prev,next today',
                 center: 'title',
-                right:  'dayGridMonth,timeGridWeek,listWeek',
+                right:  'dayGridMonth,listWeek',
             },
             buttonText: {
                 today: 'Hari ini',
                 month: 'Bulan',
-                week:  'Minggu',
                 list:  'Daftar',
             },
             navLinks: true,
