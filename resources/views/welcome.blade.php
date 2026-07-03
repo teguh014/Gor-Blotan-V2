@@ -152,11 +152,11 @@
                     </a>
                 @else
                     <a href="{{ route('login') }}"
-                       class="hidden sm:block text-sm font-medium text-gray-600 hover:text-gray-900 transition px-3 py-2">
+                       class="text-xs sm:text-sm font-medium text-gray-600 hover:text-gray-900 transition px-2 sm:px-3 py-2">
                         Masuk
                     </a>
                     <a href="{{ route('register') }}"
-                       class="bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-3 md:px-4 py-2 rounded-lg transition">
+                       class="bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm font-semibold px-3 sm:px-4 py-2 rounded-lg transition">
                         Daftar Gratis
                     </a>
                 @endauth
@@ -183,27 +183,27 @@
                     <span class="w-2 h-2 rounded-full bg-green-400 badge-pulse"></span>
                     Sistem Booking Online — Tersedia 24/7
                 </div>
-                <h1 class="text-5xl md:text-6xl font-extrabold leading-tight mb-5 drop-shadow-lg">
+                <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight mb-5 drop-shadow-lg">
                     Booking Lapangan<br>
                     <span class="text-green-300">Badminton</span> Jadi Mudah
                 </h1>
-                <p class="text-green-100/90 text-lg max-w-2xl mx-auto mb-10 leading-relaxed drop-shadow">
+                <p class="text-green-100/90 text-base sm:text-lg max-w-2xl mx-auto mb-10 leading-relaxed drop-shadow px-2">
                     Pesan lapangan badminton kapan saja dan di mana saja. Sistem kami secara otomatis
                     mencegah bentrok jadwal sehingga Anda tidak perlu khawatir.
                 </p>
-                <div class="flex items-center justify-center gap-4 flex-wrap">
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 px-4 sm:px-0">
                     @auth
                         <a href="{{ route('customer.bookings.create') }}"
-                           class="bg-white text-green-700 font-bold px-8 py-3.5 rounded-xl hover:bg-green-50 transition shadow-xl text-sm">
+                           class="bg-white text-green-700 font-bold px-8 py-3.5 rounded-xl hover:bg-green-50 transition shadow-xl text-sm w-full sm:w-auto text-center">
                             🏸 Booking Sekarang
                         </a>
                     @else
                         <a href="{{ route('register') }}"
-                           class="bg-white text-green-700 font-bold px-8 py-3.5 rounded-xl hover:bg-green-50 transition shadow-xl text-sm">
+                           class="bg-white text-green-700 font-bold px-8 py-3.5 rounded-xl hover:bg-green-50 transition shadow-xl text-sm w-full sm:w-auto text-center">
                             🏸 Mulai Booking Gratis
                         </a>
                         <a href="{{ route('login') }}"
-                           class="border border-white/40 text-white font-semibold px-8 py-3.5 rounded-xl hover:bg-white/10 transition text-sm backdrop-blur-sm">
+                           class="border border-white/40 text-white font-semibold px-8 py-3.5 rounded-xl hover:bg-white/10 transition text-sm backdrop-blur-sm w-full sm:w-auto text-center">
                             Sudah punya akun? Masuk →
                         </a>
                     @endauth
@@ -251,7 +251,7 @@
             <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-3">Cara Booking</h2>
             <p class="text-gray-500 text-sm md:text-base">Hanya 4 langkah mudah untuk bermain badminton</p>
         </div>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             @foreach([
                 ['icon' => '📝', 'step' => '01', 'title' => 'Daftar Akun', 'desc' => 'Buat akun gratis dalam hitungan detik'],
                 ['icon' => '🏟️', 'step' => '02', 'title' => 'Pilih Lapangan', 'desc' => 'Lihat fasilitas & harga setiap lapangan'],
@@ -310,17 +310,17 @@
         <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(4,47,30,0.7),rgba(5,96,68,0.6));"></div>
         {{-- Content --}}
         <div class="relative z-10">
-            <h2 class="text-4xl font-extrabold mb-4 drop-shadow-lg">Siap Bermain Badminton? 🏸</h2>
-            <p class="text-green-100 mb-8 text-base max-w-xl mx-auto">Daftar sekarang dan nikmati kemudahan booking lapangan online. Anti-bentrok, bayar mudah, main langsung!</p>
+            <h2 class="text-3xl sm:text-4xl font-extrabold mb-4 drop-shadow-lg">Siap Bermain Badminton? 🏸</h2>
+            <p class="text-green-100 mb-8 text-sm sm:text-base max-w-xl mx-auto px-4">Daftar sekarang dan nikmati kemudahan booking lapangan online. Anti-bentrok, bayar mudah, main langsung!</p>
             @guest
                 <a href="{{ route('register') }}"
-                   class="inline-block bg-white text-green-700 font-bold px-10 py-4 rounded-xl hover:bg-green-50 transition shadow-xl text-sm">
+                   class="inline-block bg-white text-green-700 font-bold px-8 sm:px-10 py-3.5 sm:py-4 rounded-xl hover:bg-green-50 transition shadow-xl text-sm w-[90%] sm:w-auto">
                     Daftar Gratis Sekarang →
                 </a>
             @endguest
             @auth
                 <a href="{{ route('customer.bookings.create') }}"
-                   class="inline-block bg-white text-green-700 font-bold px-10 py-4 rounded-xl hover:bg-green-50 transition shadow-xl text-sm">
+                   class="inline-block bg-white text-green-700 font-bold px-8 sm:px-10 py-3.5 sm:py-4 rounded-xl hover:bg-green-50 transition shadow-xl text-sm w-[90%] sm:w-auto">
                     🏸 Booking Lapangan →
                 </a>
             @endauth
