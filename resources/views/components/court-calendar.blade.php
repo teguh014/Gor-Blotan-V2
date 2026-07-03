@@ -679,6 +679,11 @@
                 week:  'Minggu',
                 list:  'Daftar',
             },
+            navLinks: true,
+            navLinkDayClick: 'listDay',
+            dateClick: function (info) {
+                calendarInstance.changeView('listDay', info.dateStr);
+            },
             eventDisplay: 'block', // Force all events to render as solid blocks
             height: 'auto',
             loading: function (isLoading) {
