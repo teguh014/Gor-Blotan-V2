@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title ?? config('app.name') }}</title>
+    <title>{{ $title ?? \App\Models\Setting::get('venue_name', config('app.name')) }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -30,12 +30,14 @@
         {{-- Drawer header --}}
         <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100">
             <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-400 to-green-600 flex items-center justify-center">
+                <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-400 to-green-600
+                            flex items-center justify-center overflow-hidden flex-shrink-0">
                     <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                              d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"/>
                     </svg>
                 </div>
-                <span class="font-bold text-gray-900">{{ config('app.name') }}</span>
+                <span class="font-bold text-gray-900">{{ \App\Models\Setting::get('venue_name', config('app.name')) }}</span>
             </div>
             <button @click="mobileMenuOpen = false" class="p-2 rounded-lg hover:bg-gray-100 transition-colors">
                 <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -101,12 +103,16 @@
                     </button>
                     {{-- Logo --}}
                     <a href="{{ route('customer.dashboard') }}" class="flex items-center gap-2.5">
-                        <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-400 to-green-600 flex items-center justify-center shadow-md shadow-emerald-200">
+                        <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-400 to-green-600
+                                    flex items-center justify-center shadow-md shadow-emerald-200 overflow-hidden">
                             <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                      d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"/>
                             </svg>
                         </div>
-                        <span class="font-bold text-gray-900 text-sm">{{ config('app.name') }}</span>
+                        <span class="font-bold text-gray-900 text-sm">
+                            {{ \App\Models\Setting::get('venue_name', config('app.name')) }}
+                        </span>
                     </a>
                 </div>
 

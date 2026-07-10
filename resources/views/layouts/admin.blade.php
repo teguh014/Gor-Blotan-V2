@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Admin | {{ config('app.name') }}</title>
+    <title>Admin | {{ \App\Models\Setting::get('venue_name', config('app.name')) }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -32,14 +32,20 @@
 
         <div class="flex items-center justify-between gap-3 px-6 py-5 border-b border-white/5">
             <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-green-600 flex items-center justify-center shadow-lg shadow-emerald-900/50">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-green-600
+                            flex items-center justify-center shadow-lg shadow-emerald-900/50 overflow-hidden flex-shrink-0">
                     <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"/>
                     </svg>
                 </div>
                 <div>
-                    <p class="text-sm font-bold text-white leading-tight">{{ config('app.name') }}</p>
-                    <p class="text-[10px] font-semibold text-emerald-400 uppercase tracking-widest">Admin Panel</p>
+                    <p class="text-sm font-bold text-white leading-tight">
+                        {{ \App\Models\Setting::get('venue_name', config('app.name')) }}
+                    </p>
+                    <p class="text-[10px] font-semibold text-emerald-400 uppercase tracking-widest">
+                        {{ \App\Models\Setting::get('venue_tagline', 'Admin Panel') ?: 'Admin Panel' }}
+                    </p>
                 </div>
             </div>
             <button @click="sidebarOpen = false" class="lg:hidden p-1 rounded-lg hover:bg-white/10">
@@ -83,6 +89,16 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                 </svg>
                 <span>Laporan Keuangan</span>
+            </a>
+
+            <a href="{{ route('admin.settings.index') }}" @click="sidebarOpen=false"
+               class="nav-item {{ request()->routeIs('admin.settings*') ? 'nav-item-active' : '' }}">
+                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                <span>Pengaturan Gedung</span>
             </a>
         </nav>
 

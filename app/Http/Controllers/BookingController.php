@@ -83,7 +83,7 @@ class BookingController extends Controller
         $primaryBooking = $createdBookings[0];
 
         // Xendit Integration
-        Configuration::setXenditKey(env('XENDIT_SECRET_KEY'));
+        Configuration::setXenditKey(config('services.xendit.secret_key'));
         $apiInstance = new InvoiceApi();
 
         $desc = $bookingType === 'monthly' 
@@ -159,7 +159,7 @@ class BookingController extends Controller
         abort_if($booking->user_id !== auth()->id(), 403);
         abort_if(!$booking->xendit_invoice_id, 422, 'Booking ini tidak memiliki invoice Xendit.');
 
-        Configuration::setXenditKey(env('XENDIT_SECRET_KEY'));
+        Configuration::setXenditKey(config('services.xendit.secret_key'));
         $apiInstance = new InvoiceApi();
 
         try {

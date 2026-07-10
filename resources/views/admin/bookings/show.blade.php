@@ -67,8 +67,21 @@
 
             {{-- Admin Actions --}}
             <div class="bg-white rounded-xl border border-gray-200 p-5">
-                <h3 class="text-sm font-semibold text-gray-700 mb-3">Aksi Admin</h3>
+            <h3 class="text-sm font-semibold text-gray-700 mb-3">Aksi Admin</h3>
                 <div class="space-y-2">
+                    {{-- Download Nota --}}
+                    @if($booking->status !== 'cancelled')
+                    <a href="{{ route('admin.bookings.receipt', $booking) }}" target="_blank"
+                       class="w-full flex items-center justify-center gap-2 bg-emerald-50 hover:bg-emerald-100
+                              text-emerald-700 border border-emerald-200 text-sm font-semibold
+                              px-4 py-2 rounded-lg transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                        </svg>
+                        Cetak / Download Nota
+                    </a>
+                    @endif
                     @if($booking->status === 'paid')
                         <form method="POST" action="{{ route('admin.bookings.complete', $booking) }}">
                             @csrf @method('PATCH')
